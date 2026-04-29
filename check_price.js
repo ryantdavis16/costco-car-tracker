@@ -18,7 +18,7 @@ async function checkCostcoCarPrice() {
 
   const browserlessKey = process.env.BROWSERLESS_API_KEY;
   const browser = await chromium.connectOverCDP(
-    `wss://production-sfo.browserless.io/chromium/stealth?token=${browserlessKey}&timeout=300000`
+    `wss://production-sfo.browserless.io/chromium/stealth?token=${browserlessKey}&timeout=300`
   );
 
   const context = browser.contexts()[0] || await browser.newContext();
