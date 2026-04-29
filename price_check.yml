@@ -22,10 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm install playwright
 
-     - name: Run price check
-        run: |
-          echo "Key length: ${#BROWSERLESS_API_KEY}"
-          node check_price.js
+      - name: Run price check
+        run: node check_price.js
         env:
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
           BROWSERLESS_API_KEY: ${{ secrets.BROWSERLESS_API_KEY }}
@@ -33,9 +31,8 @@ jobs:
       - name: Read price result
         id: price
         run: |
-          echo "RESULT<<EOF" >> $GITHUB_OUTPUT
-          cat price_result.json >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          RESULT=$(cat price_result.json | tr -d '\n' | sed 's/"/\\"/g')
+          echo "RESULT=$RESULT" >> $GITHUB_OUTPUT
 
       - name: Upload screenshot artifact
         uses: actions/upload-artifact@v4
