@@ -103,16 +103,13 @@ async function checkCostcoCarPrice() {
 
     // 8. Wait for results
     console.log('⏳ Waiting for results...');
-    await page.waitForTimeout(5000);
-    // Wait until the spinner is gone and results appear
+    await page.waitForTimeout(3000);
     try {
-      await page.waitForSelector('.car-result, .vehicle-card, [class*="carResult"], [class*="vehicleName"], .car-matrix', { timeout: 45000 });
+      await page.waitForSelector('a[data-category-name][data-price][data-brand]', { timeout: 30000 });
       console.log('✅ Results loaded');
     } catch {
-      console.log('⚠️ Could not detect results container, waiting extra time...');
-      await page.waitForTimeout(15000);
+      console.log('⚠️ Could not detect results, taking screenshot anyway...');
     }
-    await page.waitForTimeout(3000);
 
     // 9. Take a screenshot for debugging
     await page.screenshot({ path: 'results.png', fullPage: false });
