@@ -1,0 +1,13 @@
+{
+  "name": "costco-car-tracker",
+  "version": "1.0.0",
+  "description": "Daily Costco Travel rental car price tracker for OGG",
+  "main": "check_price.js",
+  "scripts": {
+    "start": "node check_price.js",
+    "test": "node check_price.js"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0"
+  }
+}
