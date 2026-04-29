@@ -1,0 +1,70 @@
+name: Costco Car Rental Price Check
+
+on:
+  schedule:
+    # Runs daily at noon Pacific time (7 PM UTC)
+    - cron: '0 19 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  check-price:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install playwright
+          npx playwright install chromium
+          npx playwright install-deps chromium
+
+      - name: Run price check
+        run: node check_price.js
+        env:
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+
+      - name: Read price result
+        id: price
+        run: |
+          echo "RESULT<<EOF" >> $GITHUB_OUTPUT
+          cat price_result.json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: price-check-screenshot
+          path: |
+            results.png
+            error_screenshot.png
+          if-no-files-found: ignore
+
+      - name: Send email notification via Gmail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.GMAIL_USER }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "🚗 Costco Car Rental Price Update - OGG Jul 6–26"
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: ${{ secrets.GMAIL_USER }}
+          body: |
+            Here are today's Costco Travel rental car prices for:
+            📍 OGG (Kahului, Maui)
+            📅 July 6 (12:00 PM) → July 26 (9:00 AM)
+            🚙 Full-size Pickup
+
+            Results:
+            ${{ steps.price.outputs.RESULT }}
+
+            Check full results: https://www.costcotravel.com/Rental-Cars
+          attachments: results.png
