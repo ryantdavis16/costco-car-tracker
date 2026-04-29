@@ -31,9 +31,8 @@ jobs:
       - name: Read price result
         id: price
         run: |
-          echo "RESULT<<EOF" >> $GITHUB_OUTPUT
-          cat price_result.json >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          RESULT=$(cat price_result.json | tr -d '\n' | sed 's/"/\\"/g')
+          echo "RESULT=$RESULT" >> $GITHUB_OUTPUT
 
       - name: Upload screenshot artifact
         uses: actions/upload-artifact@v4
