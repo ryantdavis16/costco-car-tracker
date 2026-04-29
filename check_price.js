@@ -18,7 +18,7 @@ async function checkCostcoCarPrice() {
 
   const browserlessKey = process.env.BROWSERLESS_API_KEY;
   const browser = await chromium.connectOverCDP(
-    `wss://production-sfo.browserless.io/chromium/stealth?token=${browserlessKey}&timeout=300`
+    `wss://production-sfo.browserless.io/chromium/stealth?token=${browserlessKey}`
   );
 
   const context = browser.contexts()[0] || await browser.newContext();
@@ -43,15 +43,11 @@ async function checkCostcoCarPrice() {
     // Click and fill the pickup location field
     const locationInput = page.locator('#pickupLocationTextWidget');
     await locationInput.click();
-    await page.waitForTimeout(500);
-    // Type character by character to trigger autocomplete JS events
-    await page.keyboard.type('OGG', { delay: 150 });
-    await page.waitForTimeout(2000); // Wait for autocomplete dropdown
+    await page.waitForTimeout(300);
+    await page.keyboard.type('OGG', { delay: 100 });
+    await page.waitForTimeout(1500); // Wait for autocomplete dropdown
 
-    // Take debug screenshot to see dropdown state
-    await page.screenshot({ path: 'dropdown_debug.png' });
-
-    // Select OGG from dropdown - try multiple selector patterns
+    // Select OGG from dropdown
     try {
       const oggOption = page.locator('ul li:has-text("OGG"), ul li:has-text("Kahului"), [role="option"]:has-text("OGG"), .autocomplete-suggestion:has-text("OGG")').first();
       await oggOption.waitFor({ timeout: 5000 });
@@ -61,41 +57,33 @@ async function checkCostcoCarPrice() {
       console.log('⚠️ Could not find OGG dropdown option, pressing Enter');
       await locationInput.press('Enter');
     }
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
 
-    // 3. Fill pickup date - use the datepicker properly
+    // 3. Fill pickup date
     const pickupDateInput = page.locator('#pickUpDateWidget');
     await pickupDateInput.click();
-    await page.waitForTimeout(500);
     await pickupDateInput.fill('');
-    await pickupDateInput.type(CONFIG.pickupDate, { delay: 50 });
-    await page.keyboard.press('Escape'); // Close datepicker
-    await page.waitForTimeout(500);
+    await pickupDateInput.type(CONFIG.pickupDate, { delay: 30 });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
 
     // 4. Fill pickup time
     try {
       await page.locator('#pickupTimeWidget').selectOption({ value: CONFIG.pickupTime });
-    } catch {
-      console.log('⚠️  Could not set pickup time, continuing...');
-    }
-    await page.waitForTimeout(500);
+    } catch {}
 
     // 5. Fill dropoff date
     const dropoffDateInput = page.locator('#dropOffDateWidget');
     await dropoffDateInput.click();
-    await page.waitForTimeout(500);
     await dropoffDateInput.fill('');
-    await dropoffDateInput.type(CONFIG.dropoffDate, { delay: 50 });
-    await page.keyboard.press('Escape'); // Close datepicker
-    await page.waitForTimeout(500);
+    await dropoffDateInput.type(CONFIG.dropoffDate, { delay: 30 });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
 
     // 6. Fill dropoff time
     try {
       await page.locator('#dropoffTimeWidget').selectOption({ value: CONFIG.dropoffTime });
-    } catch {
-      console.log('⚠️  Could not set dropoff time, continuing...');
-    }
-    await page.waitForTimeout(500);
+    } catch {}
 
     // 7. Click Search button
     console.log('🔍 Submitting search...');
@@ -103,21 +91,12 @@ async function checkCostcoCarPrice() {
 
     // 8. Wait for results
     console.log('⏳ Waiting for results...');
-    // Wait for URL to change to results page
     try {
-      await page.waitForURL('**/h=3002**', { timeout: 30000 });
-      console.log('✅ Results page URL detected');
-    } catch {
-      console.log('⚠️ URL did not change, continuing...');
-    }
-    await page.waitForTimeout(5000);
-    try {
-      await page.waitForSelector('a[data-category-name][data-price][data-brand]', { timeout: 20000 });
+      await page.waitForSelector('a[data-category-name][data-price][data-brand]', { timeout: 40000 });
       console.log('✅ Car result cards loaded');
     } catch {
       console.log('⚠️ Could not detect result cards...');
     }
-    await page.waitForTimeout(2000);
 
     // 9. Take a screenshot for debugging
     await page.screenshot({ path: 'results.png', fullPage: false });
