@@ -20,15 +20,13 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: |
-          npm install playwright
-          npx playwright install chromium
-          npx playwright install-deps chromium
+        run: npm install playwright
 
       - name: Run price check
         run: node check_price.js
         env:
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+          BROWSERLESS_API_KEY: ${{ secrets.BROWSERLESS_API_KEY }}
 
       - name: Read price result
         id: price

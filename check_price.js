@@ -16,10 +16,10 @@ const CONFIG = {
 async function checkCostcoCarPrice() {
   console.log('🚗 Starting Costco Travel car rental price check...');
 
-  const browser = await chromium.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  const browserlessKey = process.env.BROWSERLESS_API_KEY;
+  const browser = await chromium.connectOverCDP(
+    `wss://production-sfo.browserless.io?token=${browserlessKey}`
+  );
 
   const context = await browser.newContext({
     userAgent:
