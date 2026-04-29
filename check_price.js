@@ -103,6 +103,7 @@ async function checkCostcoCarPrice() {
 
     // 8. Wait for results
     console.log('⏳ Waiting for results...');
+    await page.waitForTimeout(8000); // Wait for results to fully load
     await page.waitForLoadState('domcontentloaded', { timeout: 60000 });
     await page.waitForTimeout(3000);
 
