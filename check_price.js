@@ -29,9 +29,10 @@ async function checkCostcoCarPrice() {
     // 1. Navigate to Costco Travel car rentals
     console.log('📍 Navigating to Costco Travel...');
     await page.goto('https://www.costcotravel.com/Rental-Cars', {
-      waitUntil: 'networkidle',
-      timeout: 30000,
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
     });
+    await page.waitForTimeout(3000); // Let JS render after load
 
     // 2. Fill in pickup location
     console.log('📝 Filling in search form...');
