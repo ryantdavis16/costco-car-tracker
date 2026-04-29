@@ -3,9 +3,9 @@ const { chromium } = require('playwright');
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const CONFIG = {
   pickupLocation: 'OGG',
-  pickupDate: '07/06/2025',
+  pickupDate: '07/06/2026',
   pickupTime: '12:00 PM',
-  dropoffDate: '07/26/2025',
+  dropoffDate: '07/26/2026',
   dropoffTime: '09:00 AM',
   carCategory: 'Full-size Pickup',
   // Set these as GitHub Actions secrets (see README)
@@ -44,23 +44,29 @@ async function checkCostcoCarPrice() {
     const locationInput = page.locator('#pickupLocationTextWidget');
     await locationInput.click();
     await locationInput.fill('OGG');
-    await page.waitForTimeout(2000); // Wait for autocomplete dropdown
+    await page.waitForTimeout(3000); // Wait for autocomplete dropdown to appear
 
-    // Select OGG from dropdown
+    // Select OGG from dropdown - try multiple selector patterns
     try {
-      const oggOption = page.locator('li:has-text("Kahului"), li:has-text("OGG")').first();
-      await oggOption.waitFor({ timeout: 5000 });
+      const oggOption = page.locator('ul li:has-text("OGG"), ul li:has-text("Kahului"), [role="option"]:has-text("OGG")').first();
+      await oggOption.waitFor({ timeout: 8000 });
       await oggOption.click();
+      console.log('✅ Selected OGG from dropdown');
     } catch {
+      // Take a screenshot to see what the dropdown looks like
+      await page.screenshot({ path: 'dropdown_debug.png' });
+      console.log('⚠️ Could not find OGG dropdown option, pressing Enter');
       await locationInput.press('Enter');
     }
     await page.waitForTimeout(1000);
 
-    // 3. Fill pickup date
+    // 3. Fill pickup date - use the datepicker properly
     const pickupDateInput = page.locator('#pickUpDateWidget');
     await pickupDateInput.click();
-    await pickupDateInput.fill(CONFIG.pickupDate);
-    await pickupDateInput.press('Tab');
+    await page.waitForTimeout(500);
+    await pickupDateInput.fill('');
+    await pickupDateInput.type(CONFIG.pickupDate, { delay: 50 });
+    await page.keyboard.press('Escape'); // Close datepicker
     await page.waitForTimeout(500);
 
     // 4. Fill pickup time
@@ -74,8 +80,10 @@ async function checkCostcoCarPrice() {
     // 5. Fill dropoff date
     const dropoffDateInput = page.locator('#dropOffDateWidget');
     await dropoffDateInput.click();
-    await dropoffDateInput.fill(CONFIG.dropoffDate);
-    await dropoffDateInput.press('Tab');
+    await page.waitForTimeout(500);
+    await dropoffDateInput.fill('');
+    await dropoffDateInput.type(CONFIG.dropoffDate, { delay: 50 });
+    await page.keyboard.press('Escape'); // Close datepicker
     await page.waitForTimeout(500);
 
     // 6. Fill dropoff time
