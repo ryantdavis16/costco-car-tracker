@@ -43,18 +43,21 @@ async function checkCostcoCarPrice() {
     // Click and fill the pickup location field
     const locationInput = page.locator('#pickupLocationTextWidget');
     await locationInput.click();
-    await locationInput.fill('OGG');
-    await page.waitForTimeout(3000); // Wait for autocomplete dropdown to appear
+    await page.waitForTimeout(500);
+    // Type character by character to trigger autocomplete JS events
+    await page.keyboard.type('OGG', { delay: 150 });
+    await page.waitForTimeout(4000); // Wait longer for autocomplete dropdown
+
+    // Take debug screenshot to see dropdown state
+    await page.screenshot({ path: 'dropdown_debug.png' });
 
     // Select OGG from dropdown - try multiple selector patterns
     try {
-      const oggOption = page.locator('ul li:has-text("OGG"), ul li:has-text("Kahului"), [role="option"]:has-text("OGG")').first();
-      await oggOption.waitFor({ timeout: 8000 });
+      const oggOption = page.locator('ul li:has-text("OGG"), ul li:has-text("Kahului"), [role="option"]:has-text("OGG"), .autocomplete-suggestion:has-text("OGG")').first();
+      await oggOption.waitFor({ timeout: 5000 });
       await oggOption.click();
       console.log('✅ Selected OGG from dropdown');
     } catch {
-      // Take a screenshot to see what the dropdown looks like
-      await page.screenshot({ path: 'dropdown_debug.png' });
       console.log('⚠️ Could not find OGG dropdown option, pressing Enter');
       await locationInput.press('Enter');
     }
