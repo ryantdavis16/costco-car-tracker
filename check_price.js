@@ -118,41 +118,33 @@ async function checkCostcoCarPrice() {
     await page.screenshot({ path: 'results.png', fullPage: false });
     console.log('📸 Screenshot saved to results.png');
 
-    // 10. Extract prices — look for full-size pickup trucks
+    // 10. Extract prices using exact data attributes from Costco's HTML
     console.log('💰 Extracting prices...');
     const prices = await page.evaluate(() => {
       const results = [];
 
-      // Common Costco Travel result card patterns
-      const cards = document.querySelectorAll(
-        '.car-result, .vehicle-card, [class*="carResult"], [class*="vehicle"], .result-item'
-      );
+      // All car result cards have data-category-name and data-price attributes
+      const cards = document.querySelectorAll('a[data-category-name][data-price][data-brand]');
 
       cards.forEach((card) => {
-        const nameEl = card.querySelector('[class*="vehicleName"], [class*="carName"], h3, h4, .vehicle-name');
-        const priceEl = card.querySelector('[class*="price"], [class*="rate"], .total-price, .daily-rate');
-        const categoryEl = card.querySelector('[class*="category"], [class*="class"], .car-category');
+        const categoryName = card.getAttribute('data-category-name') || '';
+        const brand = card.getAttribute('data-brand') || '';
+        const price = card.getAttribute('data-price') || '';
+        const priceFormatted = card.getAttribute('data-price-fomatted-and-rounded') || '';
+        const carType = card.getAttribute('data-car-type') || '';
 
-        if (nameEl || categoryEl) {
-          results.push({
-            name: nameEl?.textContent?.trim() || '',
-            category: categoryEl?.textContent?.trim() || '',
-            price: priceEl?.textContent?.trim() || '',
-          });
-        }
+        results.push({ categoryName, brand, price: parseFloat(price), priceFormatted, carType });
       });
 
-      // Fallback: grab all price elements on the page
-      if (results.length === 0) {
-        document.querySelectorAll('[class*="price"], [class*="total"]').forEach((el) => {
-          const text = el.textContent.trim();
-          if (text.includes('$')) {
-            results.push({ name: 'Unknown', price: text });
-          }
-        });
-      }
-
       return results;
+    });
+
+    // Filter for full-size pickups
+    const pickupResults = prices.filter(r =>
+      r.categoryName.toLowerCase().includes('fullsize pickup') ||
+      r.categoryName.toLowerCase().includes('full-size pickup') ||
+      r.carType.toLowerCase().includes('pickup')
+    );
     });
 
     // 11. Filter for pickup trucks
@@ -166,15 +158,24 @@ async function checkCostcoCarPrice() {
 
     const allResults = pickupResults.length > 0 ? pickupResults : prices;
 
-    console.log('\n📊 Results found:');
-    allResults.forEach((r) => console.log(`  ${r.name || r.category}: ${r.price}`));
+    console.log('\n📊 Pickup truck results found:');
+    pickupResults.forEach((r) => console.log(`  ${r.brand} ${r.categoryName}: ${r.priceFormatted}`));
+
+    if (pickupResults.length === 0) {
+      console.log('⚠️ No pickup results found, showing all results:');
+      prices.forEach((r) => console.log(`  ${r.brand} ${r.categoryName}: ${r.priceFormatted}`));
+    }
+
+    // Sort pickups by price
+    pickupResults.sort((a, b) => a.price - b.price);
 
     // 12. Log result as JSON for GitHub Actions to pick up
     const output = {
       timestamp: new Date().toISOString(),
-      config: CONFIG,
-      results: allResults,
-      rawResultCount: prices.length,
+      location: 'OGG - Kahului, Maui',
+      dates: 'Jul 6, 2026 12:00 PM → Jul 26, 2026 9:00 AM',
+      pickupTrucks: pickupResults,
+      allCarsCount: prices.length,
     };
 
     const fs = require('fs');
