@@ -18,7 +18,7 @@ async function checkCostcoCarPrice() {
 
   const browserlessKey = process.env.BROWSERLESS_API_KEY;
   const browser = await chromium.connectOverCDP(
-    `wss://production-sfo.browserless.io/chromium/stealth?token=${browserlessKey}`
+    `wss://production-sfo.browserless.io/chromium/stealth?token=${browserlessKey}&timeout=300000`
   );
 
   const context = browser.contexts()[0] || await browser.newContext();
@@ -46,7 +46,7 @@ async function checkCostcoCarPrice() {
     await page.waitForTimeout(500);
     // Type character by character to trigger autocomplete JS events
     await page.keyboard.type('OGG', { delay: 150 });
-    await page.waitForTimeout(4000); // Wait longer for autocomplete dropdown
+    await page.waitForTimeout(2000); // Wait for autocomplete dropdown
 
     // Take debug screenshot to see dropdown state
     await page.screenshot({ path: 'dropdown_debug.png' });
