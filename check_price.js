@@ -41,57 +41,58 @@ async function checkCostcoCarPrice() {
     });
 
     // Click and fill the pickup location field
-    const locationInput = page.locator('input[placeholder*="Pick-up"], input[id*="pickupLocation"], #pickupLocationTextInput').first();
+    const locationInput = page.locator('#pickupLocationTextWidget');
     await locationInput.click();
     await locationInput.fill('OGG');
-    await page.waitForTimeout(1500); // Wait for autocomplete
+    await page.waitForTimeout(2000); // Wait for autocomplete dropdown
 
     // Select OGG from dropdown
-    const oggOption = page.locator('text=OGG, li:has-text("Kahului"), [data-value="OGG"]').first();
     try {
+      const oggOption = page.locator('li:has-text("Kahului"), li:has-text("OGG")').first();
       await oggOption.waitFor({ timeout: 5000 });
       await oggOption.click();
     } catch {
-      // Try pressing Enter if dropdown doesn't appear
       await locationInput.press('Enter');
     }
+    await page.waitForTimeout(1000);
 
     // 3. Fill pickup date
-    const pickupDateInput = page.locator('input[id*="pickupDate"], input[placeholder*="Pick-up Date"], #pickUpDate').first();
+    const pickupDateInput = page.locator('#pickUpDateWidget');
     await pickupDateInput.click();
     await pickupDateInput.fill(CONFIG.pickupDate);
+    await pickupDateInput.press('Tab');
     await page.waitForTimeout(500);
 
     // 4. Fill pickup time
-    const pickupTimeSelect = page.locator('select[id*="pickupTime"], select[name*="pickupTime"]').first();
     try {
-      await pickupTimeSelect.selectOption({ label: CONFIG.pickupTime });
+      await page.locator('#pickupTimeWidget').selectOption({ value: CONFIG.pickupTime });
     } catch {
-      console.log('⚠️  Could not set pickup time via select, continuing...');
+      console.log('⚠️  Could not set pickup time, continuing...');
     }
+    await page.waitForTimeout(500);
 
     // 5. Fill dropoff date
-    const dropoffDateInput = page.locator('input[id*="returnDate"], input[placeholder*="Return Date"], #returnDate').first();
+    const dropoffDateInput = page.locator('#dropOffDateWidget');
     await dropoffDateInput.click();
     await dropoffDateInput.fill(CONFIG.dropoffDate);
+    await dropoffDateInput.press('Tab');
     await page.waitForTimeout(500);
 
     // 6. Fill dropoff time
-    const dropoffTimeSelect = page.locator('select[id*="returnTime"], select[name*="returnTime"]').first();
     try {
-      await dropoffTimeSelect.selectOption({ label: CONFIG.dropoffTime });
+      await page.locator('#dropoffTimeWidget').selectOption({ value: CONFIG.dropoffTime });
     } catch {
-      console.log('⚠️  Could not set dropoff time via select, continuing...');
+      console.log('⚠️  Could not set dropoff time, continuing...');
     }
+    await page.waitForTimeout(500);
 
     // 7. Click Search button
     console.log('🔍 Submitting search...');
-    const searchButton = page.locator('button[type="submit"], button:has-text("Search"), input[value="Search"]').first();
-    await searchButton.click();
+    await page.locator('#findMyCarButton').click();
 
     // 8. Wait for results
     console.log('⏳ Waiting for results...');
-    await page.waitForLoadState('networkidle', { timeout: 30000 });
+    await page.waitForLoadState('domcontentloaded', { timeout: 60000 });
     await page.waitForTimeout(3000);
 
     // 9. Take a screenshot for debugging
