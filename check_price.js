@@ -18,14 +18,10 @@ async function checkCostcoCarPrice() {
 
   const browserlessKey = process.env.BROWSERLESS_API_KEY;
   const browser = await chromium.connectOverCDP(
-    `wss://production-sfo.browserless.io?token=${browserlessKey}`
+    `wss://production-sfo.browserless.io/chromium/stealth?token=${browserlessKey}`
   );
 
-  const context = await browser.newContext({
-    userAgent:
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    viewport: { width: 1280, height: 800 },
-  });
+  const context = browser.contexts()[0] || await browser.newContext();
 
   const page = await context.newPage();
 
