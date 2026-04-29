@@ -145,16 +145,6 @@ async function checkCostcoCarPrice() {
       r.categoryName.toLowerCase().includes('full-size pickup') ||
       r.carType.toLowerCase().includes('pickup')
     );
-    });
-
-    // 11. Filter for pickup trucks
-    const pickupResults = prices.filter(
-      (r) =>
-        r.name?.toLowerCase().includes('pickup') ||
-        r.name?.toLowerCase().includes('truck') ||
-        r.category?.toLowerCase().includes('pickup') ||
-        r.category?.toLowerCase().includes('truck')
-    );
 
     const allResults = pickupResults.length > 0 ? pickupResults : prices;
 
