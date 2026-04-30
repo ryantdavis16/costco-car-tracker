@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs daily at noon Pacific time (7 PM UTC)
     - cron: '0 19 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   check-price:
@@ -20,13 +20,18 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install playwright
+        run: npm install
+
+      - name: Install Chromium dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
 
       - name: Run price check
         run: node check_price.js
         env:
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
-          BROWSERLESS_API_KEY: ${{ secrets.BROWSERLESS_API_KEY }}
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
 
       - name: Read price result
         id: price
@@ -60,7 +65,6 @@ jobs:
             📅 July 6 (12:00 PM) → July 26 (9:00 AM)
             🚙 Full-size Pickup
 
-            Results:
             ${{ steps.price.outputs.RESULT }}
 
             Check full results: https://www.costcotravel.com/Rental-Cars
