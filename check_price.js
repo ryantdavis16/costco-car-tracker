@@ -92,15 +92,19 @@ async function checkCostcoCarPrice() {
     // 8. Wait for results
     console.log('⏳ Waiting for results...');
     try {
-      await page.waitForSelector('a[data-category-name][data-price][data-brand]', { timeout: 40000 });
+      await page.waitForSelector('a[data-category-name][data-price][data-brand]', { timeout: 55000 });
       console.log('✅ Car result cards loaded');
     } catch {
       console.log('⚠️ Could not detect result cards...');
     }
 
     // 9. Take a screenshot for debugging
-    await page.screenshot({ path: 'results.png', fullPage: false });
-    console.log('📸 Screenshot saved to results.png');
+    try {
+      await page.screenshot({ path: 'results.png', fullPage: false });
+      console.log('📸 Screenshot saved to results.png');
+    } catch {
+      console.log('⚠️ Could not take screenshot');
+    }
 
     // 10. Extract prices using exact data attributes from Costco's HTML
     console.log('💰 Extracting prices...');
