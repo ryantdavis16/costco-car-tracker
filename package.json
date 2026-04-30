@@ -4,10 +4,11 @@
   "description": "Daily Costco Travel rental car price tracker for OGG",
   "main": "check_price.js",
   "scripts": {
-    "start": "node check_price.js",
-    "test": "node check_price.js"
+    "start": "node check_price.js"
   },
   "dependencies": {
-    "playwright": "^1.44.0"
+    "puppeteer": "^21.0.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
